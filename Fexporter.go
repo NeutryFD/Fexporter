@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,14 +14,30 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var file string
+func getDataFromFile() string {
+
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) //avoid "flag redefined" issue
+
+	var pathPtr string
+	//set flag
+	flag.StringVar(&pathPtr, "f", "path to file ", "String")
+	//init flag
+	flag.Parse()
+
+	//read data from path
+	path, err := os.ReadFile(pathPtr)
+	if err != nil {
+		fmt.Println("No found the file")
+	}
+	return string(path)
+}
 
 // Define a struct for you collector that contains pointers
 // to prometheus descriptors for each metric you wish to expose.
 // Note you can also include fields of other types if they provide utility
 // but we just won't be exposing them as metrics.
 
-// constructor definition
+// class definition
 type dataEntropyCollector struct {
 	NorMetric    *prometheus.Desc
 	BigMetric    *prometheus.Desc
@@ -58,10 +76,7 @@ func (collector *dataEntropyCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect implements required collect function for all promehteus collectors
 func (collector *dataEntropyCollector) Collect(ch chan<- prometheus.Metric) {
 
-	//"./sources/statFile"
-	OpenedFile, _ := os.ReadFile(file)
-	data := string(OpenedFile)
-
+	data := getDataFromFile()
 	//format data from file
 	arrayData := strings.Split(data, ",")
 
@@ -88,16 +103,12 @@ func (collector *dataEntropyCollector) Collect(ch chan<- prometheus.Metric) {
 
 func main() {
 
-	//catch argument
-	file = os.Args[1]
-
-	//init constructor
+	//declare object
 	entropyData := EntropyCollector()
-
-	//collect metrics
+	//collect metrics,
 	prometheus.MustRegister(entropyData)
 
-	//start server and configs
+	//start server and set port to listen
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":5500", nil))
 }

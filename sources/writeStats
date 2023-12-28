@@ -1,0 +1,10 @@
+#!/bin/bash
+
+declare count=0.0
+
+while true; do
+let count+=1.334
+$(sleep 1)
+echo "$count" > ./statFile
+done
+
