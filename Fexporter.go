@@ -96,8 +96,6 @@ func (collector *dataEntropyCollector) Collect(ch chan<- prometheus.Metric) {
 		fmt.Println(e)
 	}
 
-	fmt.Println(Nor_metric, Big_metric, Bigger_metric, time.Now())
-
 	//Write latest value for each metric in the prometheus metric channel.
 	//Note that you can pass CounterValue, GaugeValue, or UntypedValue types here.
 	m1 := prometheus.MustNewConstMetric(collector.NorMetric, prometheus.GaugeValue, Nor_metric)
@@ -138,4 +136,8 @@ func main() {
 
 }
 
+//run python script from go
 //verbose
+// get labels and test path from file .yml
+
+// sync scrape_interval and scrape_timeout with EntropyCal.py timeslap
