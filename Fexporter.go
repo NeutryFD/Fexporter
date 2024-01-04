@@ -1,11 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -14,23 +13,30 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func getDataFromFile() string {
+func getDataFromScript() string {
 
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) //avoid "flag redefined" issue
+	data, _ := exec.Command("python3", "./sources/entropyCal.py").Output()
+	return string(data)
 
-	var pathPtr string
-	//set flag
-	flag.StringVar(&pathPtr, "f", "path to file ", "String")
-	//init flag
-	flag.Parse()
-
-	//read data from path
-	path, err := os.ReadFile(pathPtr)
-	if err != nil {
-		fmt.Println("No found the file")
-	}
-	return string(path)
 }
+
+// func getDataFromFile() string {
+
+// 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) //avoid "flag redefined" issue
+
+// 	var pathPtr string
+// 	//set flag
+// 	flag.StringVar(&pathPtr, "f", "path to file ", "String")
+// 	//init flag
+// 	flag.Parse()
+
+// 	//read data from path
+// 	path, err := os.ReadFile(pathPtr)
+// 	if err != nil {
+// 		fmt.Println("No found the file")
+// 	}
+// 	return string(path)
+// }
 
 // Define a struct for you collector that contains pointers
 // to prometheus descriptors for each metric you wish to expose.
@@ -76,14 +82,22 @@ func (collector *dataEntropyCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect implements required collect function for all promehteus collectors
 func (collector *dataEntropyCollector) Collect(ch chan<- prometheus.Metric) {
 
-	data := getDataFromFile()
+	data := getDataFromScript()
+
 	//format data from file
 	arrayData := strings.Split(data, ",")
 
 	//cast string to float
 	Nor_metric, _ := strconv.ParseFloat(arrayData[0], 64)
 	Big_metric, _ := strconv.ParseFloat(arrayData[1], 64)
-	Bigger_metric, _ := strconv.ParseFloat(arrayData[2], 64)
+	Bigger_metric, err := strconv.ParseFloat(arrayData[2], 64)
+
+	if err != nil {
+		e := err.Error()
+		fmt.Println(e)
+	}
+
+	fmt.Println(Nor_metric, Big_metric, Bigger_metric, time.Now())
 
 	//Write latest value for each metric in the prometheus metric channel.
 	//Note that you can pass CounterValue, GaugeValue, or UntypedValue types here.
@@ -111,4 +125,5 @@ func main() {
 	//start server and set port to listen
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(":5500", nil))
+
 }

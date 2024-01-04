@@ -155,7 +155,7 @@ Main section
 if __name__ == "__main__":
 
     h_fabricante = "unknown"
-while True:
+#while True:
     # Checking arguments
     #verbose = "-v" in sys.argv
 
@@ -177,12 +177,12 @@ while True:
         h_i_results.append(h_i)
 
     #if verbose:
-    with open("./statFile","w") as f:
-        data = str(h_i_results[0]) +","+ str(h_i_results[1]) + "," +str(h_i_results[2])
-        f.write(data)
+    #with open("./statFile","w") as f:
+    data = str(h_i_results[0]) +","+ str(h_i_results[1]) + "," +str(h_i_results[2])
+    #    f.write(data)
 
 
-       #print(f"[RES] The minimum entropy for the {len(dataNor)}, {len(dataBig)} and {len(dataBigger)} samples is : ",h_i_results[0],h_i_results[1],h_i_results[2] )
+    print(data,end="")
     # else:
     #    # Make the calculations and get the data you want to send to Elasticsearch.
     #    data = str(h_i_results[0]) +","+ str(h_i_results[1]) + "," +str(h_i_results[2])
