@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,10 +15,8 @@ import (
 )
 
 func getDataFromScript() string {
-
 	data, _ := exec.Command("python3", "./sources/entropyCal.py").Output()
 	return string(data)
-
 }
 
 // func getDataFromFile() string {
@@ -117,13 +116,26 @@ func (collector *dataEntropyCollector) Collect(ch chan<- prometheus.Metric) {
 
 func main() {
 
-	//declare object
-	entropyData := EntropyCollector()
-	//collect metrics,
-	prometheus.MustRegister(entropyData)
+	//flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) //avoid "flag redefined" issue
 
-	//start server and set port to listen
-	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":5500", nil))
+	pathPtr := flag.Bool("v", false, "verbose")
+	flag.Parse()
+
+	if *pathPtr {
+
+		fmt.Println(getDataFromScript())
+	} else {
+		//declare object
+		entropyData := EntropyCollector()
+		//collect metrics,
+		prometheus.MustRegister(entropyData)
+
+		//start server and set port to listen
+		http.Handle("/metrics", promhttp.Handler())
+		log.Fatal(http.ListenAndServe(":5500", nil))
+
+	}
 
 }
+
+//verbose
